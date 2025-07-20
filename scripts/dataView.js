@@ -151,26 +151,38 @@ function showAllData() {
     }
 }
 
+const PAGE_SIZE = 50;
+let currentPageByTable = {};
+
 function createTableDataSection(tableName, container, data = null) {
     try {
         const result = data || alasql(`SELECT * FROM ${tableName}`);
         if (result.length === 0) return;
 
+        // Paginación
+        if (!currentPageByTable[tableName]) currentPageByTable[tableName] = 1;
+        const currentPage = currentPageByTable[tableName];
+        const totalRows = result.length;
+        const totalPages = Math.max(1, Math.ceil(totalRows / PAGE_SIZE));
+        const start = (currentPage - 1) * PAGE_SIZE;
+        const end = start + PAGE_SIZE;
+        const pageData = result.slice(start, end);
+
         const section = document.createElement('div');
         section.className = 'data-section';
-        
+
         const pkColumn = schema.tables[tableName].columns.find(col => col.pk);
         if (!pkColumn) return;
 
         section.innerHTML = `<div class="data-table-title">${tableName}</div>`;
-        
+
         const grid = document.createElement('div');
         grid.className = 'data-grid';
 
-        result.forEach(row => {
+        pageData.forEach(row => {
             const block = document.createElement('div');
             block.className = 'data-block';
-            
+
             const pkValue = row[pkColumn.name];
             let detailsHtml = '';
 
@@ -198,11 +210,11 @@ function createTableDataSection(tableName, container, data = null) {
                 if (!e.target.closest('button')) {
                     const details = block.querySelector('.data-details');
                     const wasHidden = details.style.display === 'none' || !details.style.display;
-                    
+
                     grid.querySelectorAll('.data-details').forEach(d => {
                         d.style.display = 'none';
                     });
-                    
+
                     details.style.display = wasHidden ? 'block' : 'none';
                 }
             });
@@ -211,6 +223,33 @@ function createTableDataSection(tableName, container, data = null) {
         });
 
         section.appendChild(grid);
+
+        // Controles de paginación
+        const pagination = document.createElement('div');
+        pagination.className = 'pagination';
+        if (currentPage > 1) {
+            const prevBtn = document.createElement('button');
+            prevBtn.textContent = 'Anterior';
+            prevBtn.onclick = () => {
+                currentPageByTable[tableName]--;
+                container.innerHTML = '';
+                createTableDataSection(tableName, container, result);
+            };
+            pagination.appendChild(prevBtn);
+        }
+        pagination.appendChild(document.createTextNode(` Página ${currentPage} de ${totalPages} `));
+        if (currentPage < totalPages) {
+            const nextBtn = document.createElement('button');
+            nextBtn.textContent = 'Siguiente';
+            nextBtn.onclick = () => {
+                currentPageByTable[tableName]++;
+                container.innerHTML = '';
+                createTableDataSection(tableName, container, result);
+            };
+            pagination.appendChild(nextBtn);
+        }
+        section.appendChild(pagination);
+
         container.appendChild(section);
     } catch (error) {
         console.error(`Error al cargar datos de ${tableName}:`, error);
