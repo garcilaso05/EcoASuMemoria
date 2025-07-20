@@ -272,7 +272,17 @@ function deleteRecord(tableName, pkValue, event) {
 function editRecord(tableName, pkValue, event) {
     event.stopPropagation();
     const pkColumn = schema.tables[tableName].columns.find(col => col.pk);
-    const record = alasql(`SELECT * FROM ${tableName} WHERE ${pkColumn.name} = ?`, [pkValue])[0];
+    let pkVal = pkValue;
+    if (pkColumn.type === 'INT' || pkColumn.type === 'FLOAT') {
+        pkVal = Number(pkValue);
+    }
+    console.log('Intentando editar:', { tableName, pkColumn, pkValue, tipo: typeof pkValue });
+    const record = alasql(`SELECT * FROM ${tableName} WHERE ${pkColumn.name} = ?`, [pkVal])[0];
+
+    if (!record) {
+        alert('No se encontró el registro para editar.');
+        return;
+    }
     
     let html = `<div class="edit-form">`;
     schema.tables[tableName].columns.forEach(col => {
@@ -331,7 +341,6 @@ function editRecord(tableName, pkValue, event) {
     `;
     document.body.appendChild(modal);
 }
-
 function saveEditedRecord(tableName, pkValue, modal) {
     try {
         const pkColumn = schema.tables[tableName].columns.find(col => col.pk);
