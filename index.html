@@ -12,6 +12,8 @@
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="scripts/textFormatter.js"></script>
+    <script src="scripts/editFormFormatter.js"></script>
     <link rel="icon" type="image/png" href="styles/eSQL.png">
 </head>
 <body>
@@ -217,7 +219,7 @@
                                 </div>
                             </div>
                             <div class="block-note">
-                                <span class="block-badge">Seguridad</span>
+                                <span class="block-badge">🔒 Seguridad</span>
                                 <p>
                                     Cada usuario accede solo a las funciones necesarias para su perfil, garantizando la seguridad y la integridad de la información.
                                 </p>
@@ -417,6 +419,9 @@
     <!-- Pestaña Datos -->
     <div id="datos" class="tab-content">
         <h2>Datos Insertados</h2>
+        <div class="search-header">
+            <h3>Buscar y filtrar</h3>
+        </div>
         <div class="data-actions">
             <button onclick="downloadInsertions()">Descargar Inserciones</button>
             <button onclick="document.getElementById('insertionsFileInput').click()">Cargar Inserciones</button>
@@ -580,6 +585,9 @@
     <script src="scripts/mapCoordinates.js"></script>
     <script src="scripts/colorTheme.js"></script>
     <script src="scripts/help.js"></script>
+    <!-- Añadir antes de cerrar el body -->
+    <link rel="stylesheet" href="styles/insertions.css">
+    <script src="scripts/labelScroller.js"></script>
     <script>
         document.addEventListener('visibilitychange', function() {
             if (document.hidden) {
