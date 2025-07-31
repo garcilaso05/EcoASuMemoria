@@ -1303,6 +1303,40 @@ button:hover {
     width: 200px;
 }
 
+/* Estilos específicos para el modal de edición */
+.edit-modal-content {
+    max-height: 90vh !important;
+    height: auto;
+    display: flex !important;
+    flex-direction: column;
+}
+
+.edit-form-scrollable-content {
+    flex: 1;
+    overflow-y: auto;
+    max-height: calc(90vh - 150px);
+    padding: 0 20px;
+    margin: 0 -20px;
+}
+
+.modal-buttons {
+    flex-shrink: 0;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    background: inherit;
+}
+
+/* Asegurar que en modo oscuro los estilos se mantengan */
+.dark-mode .edit-modal-content {
+    background-color: var(--modal-bg);
+    border-color: var(--modal-border);
+    color: var(--color-text);
+}
+
 #mapaVictimes {
     height: calc(100vh - 150px); /* Dynamically adjust height */
     width: 100%;

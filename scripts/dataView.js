@@ -332,11 +332,15 @@ function editRecord(tableName, pkValue, event) {
     modal.className = 'modal';
     modal.style.display = 'block';
     modal.innerHTML = `
-        <div class="modal-content">
+        <div class="modal-content edit-modal-content">
             <span class="close" onclick="this.closest('.modal').remove()">×</span>
             <h2>Editar Registro</h2>
-            ${html}
-            <button onclick="saveEditedRecord('${tableName}', '${pkValue}', this.closest('.modal'))">Guardar</button>
+            <div class="edit-form-scrollable-content">
+                ${html}
+            </div>
+            <div class="modal-buttons">
+                <button onclick="saveEditedRecord('${tableName}', '${pkValue}', this.closest('.modal'))">Guardar</button>
+            </div>
         </div>
     `;
     document.body.appendChild(modal);
@@ -356,8 +360,18 @@ function saveEditedRecord(tableName, pkValue, modal) {
                     if (value === '') {
                         updates.push(`${col.name} = NULL`);
                     } else {
-                        if (col.type === 'BOOLEAN') {
-                            value = value === 'true';
+                        // Convertir el valor al tipo de dato correcto
+                        switch (col.type) {
+                            case 'BOOLEAN':
+                                value = (value === 'true');
+                                break;
+                            case 'INT':
+                                value = parseInt(value, 10);
+                                break;
+                            case 'FLOAT':
+                                value = parseFloat(value);
+                                break;
+                            // Para STRING, DATE y Enums, el valor de texto es adecuado
                         }
                         updates.push(`${col.name} = ?`);
                         values.push(value);
@@ -366,7 +380,13 @@ function saveEditedRecord(tableName, pkValue, modal) {
             }
         });
 
-        values.push(pkValue); // Valor para WHERE
+        let pkVal = pkValue;
+        // Convertir el valor de la clave primaria a su tipo correcto
+        if (pkColumn.type === 'INT' || pkColumn.type === 'FLOAT') {
+            pkVal = Number(pkValue);
+        }
+
+        values.push(pkVal); // Valor para WHERE
         const query = `UPDATE ${tableName} SET ${updates.join(', ')} WHERE ${pkColumn.name} = ?`;
         alasql(query, values);
         
