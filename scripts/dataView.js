@@ -402,22 +402,22 @@ function downloadInsertions() {
                 if (data.length > 0) {
                     hasData = true;
                     insertionsSQL += `-- Inserciones para tabla ${tableName}\n`;
-                    data.forEach(row => {
-                        const columns = [];
-                        const values = [];
-                        
-                        Object.entries(row).forEach(([col, val]) => {
-                            columns.push(col);
-                            if (val === null || val === undefined || val === '') {
-                                values.push('NULL');
-                            } else {
-                                values.push(typeof val === 'string' ? `'${val}'` : val);
-                            }
-                        });
+                    
+                    const columns = Object.keys(data[0]);
+                    insertionsSQL += `INSERT INTO ${tableName} (${columns.join(', ')})\nVALUES\n`;
 
-                        insertionsSQL += `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${values.join(', ')});\n`;
+                    const valuesList = data.map(row => {
+                        const values = columns.map(col => {
+                            const val = row[col];
+                            if (val === null || val === undefined || val === '') {
+                                return 'NULL';
+                            }
+                            return typeof val === 'string' ? `'${val.replace(/'/g, "''")}'` : val;
+                        });
+                        return `    (${values.join(', ')})`;
                     });
-                    insertionsSQL += '\n';
+
+                    insertionsSQL += valuesList.join(',\n') + ';\n\n';
                 }
             } catch (error) {
                 console.error(`Error al procesar tabla ${tableName}:`, error);
