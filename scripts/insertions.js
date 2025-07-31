@@ -44,7 +44,7 @@ function createTableSection(tableName) {
 }
 
 function createInputField(column) {
-    const label = `<label>${column.pk ? `<strong>${column.name}</strong>` : column.name} (${column.type}):</label>`;
+    const label = `<label>${column.name}:</label>`;
     let input = '';
 
     if (schema.tables[column.type]?.isEnum) {
@@ -69,11 +69,7 @@ function createInputField(column) {
                 input = `<input type="number" name="${column.name}" step="0.01" ${column.pk ? 'required' : ''}>`;
                 break;
             case 'BOOLEAN':
-                input = `<select name="${column.name}" ${column.pk ? 'required' : ''}>
-                            <option value="">Seleccione...</option>
-                            <option value="true">Verdadero</option>
-                            <option value="false">Falso</option>
-                        </select>`;
+                input = `<input type="checkbox" name="${column.name}" ${column.pk ? 'required' : ''}>`;
                 break;
             default:
                 input = `<input type="text" name="${column.name}" ${column.pk ? 'required' : ''}>`;
@@ -101,7 +97,14 @@ function insertData(tableName, continueInserting) {
         // Validar y recoger valores
         fields.forEach(field => {
             const column = columns.find(col => col.name === field.name);
-            const value = field.value.trim();
+            if (!column) return;
+
+            let value;
+            if (column.type === 'BOOLEAN') {
+                value = field.checked;
+            } else {
+                value = field.value.trim();
+            }
             
             // Validación especial para PK
             if (column.pk) {
@@ -117,15 +120,19 @@ function insertData(tableName, continueInserting) {
                 
                 values[field.name] = validateAndFormatValue(value, column.type);
             } else {
-                // Para campos no-PK, permitir NULL
-                values[field.name] = value === '' ? null : validateAndFormatValue(value, column.type);
+                // Para campos no-PK, permitir NULL o el valor correspondiente
+                if (column.type === 'BOOLEAN') {
+                    values[field.name] = value;
+                } else {
+                    values[field.name] = value === '' ? null : validateAndFormatValue(value, column.type);
+                }
             }
         });
 
         // Construir y ejecutar la consulta SQL
         const columnNames = Object.keys(values).join(', ');
         const columnValues = Object.values(values).map(v => 
-            v === null ? 'NULL' : typeof v === 'string' ? `'${v}'` : v
+            v === null ? 'NULL' : typeof v === 'string' ? `'${v.replace(/'/g, "''")}'` : v
         ).join(', ');
         const query = `INSERT INTO ${tableName} (${columnNames}) VALUES (${columnValues})`;
 
@@ -134,18 +141,28 @@ function insertData(tableName, continueInserting) {
         if (continueInserting) {
             // Limpiar todos los campos del formulario
             fields.forEach(field => {
-                field.value = '';
+                if (field.type === 'checkbox') {
+                    field.checked = false;
+                } else {
+                    field.value = '';
+                }
                 // Para los select, seleccionar la primera opción (vacía)
                 if (field.tagName === 'SELECT') {
                     field.selectedIndex = 0;
                 }
             });
+            // Mantener el foco en el campo PK para la siguiente inserción
+            form.querySelector(`[name="${pkColumn.name}"]`).focus();
         } else {
             // Cerrar el formulario
             form.style.display = 'none';
             // Limpiar los campos antes de cerrar
             fields.forEach(field => {
-                field.value = '';
+                if (field.type === 'checkbox') {
+                    field.checked = false;
+                } else {
+                    field.value = '';
+                }
                 if (field.tagName === 'SELECT') {
                     field.selectedIndex = 0;
                 }
@@ -155,6 +172,47 @@ function insertData(tableName, continueInserting) {
         alert('Datos insertados correctamente');
     } catch (error) {
         alert('Error al insertar datos: ' + error.message);
+    }
+}
+
+function submitInsertForm(tableName) {
+    const form = document.getElementById(`insert-form-${tableName}`);
+    const inputs = form.querySelectorAll('input, select');
+    const values = {};
+    let error = false;
+
+    try {
+        inputs.forEach(input => {
+            if (input.name) {
+                const column = schema.tables[tableName].columns.find(col => col.name === input.name);
+                if (column) {
+                    let value;
+                    if (column.type === 'BOOLEAN') {
+                        value = input.checked;
+                    } else {
+                        value = validateAndFormatValue(input.value, column.type);
+                    }
+                    
+                    if (column.pk && (value === null || value === '')) {
+                        throw new Error(`La clave primaria "${column.name}" no puede estar vacía.`);
+                    }
+                    values[input.name] = value;
+                }
+            }
+        });
+
+        const columns = Object.keys(values).join(', ');
+        const valuePlaceholders = Object.values(values).map(() => '?').join(', ');
+        const query = `INSERT INTO ${tableName} (${columns}) VALUES (${valuePlaceholders})`;
+        
+        alasql(query, [Object.values(values)]);
+        
+        showNotification(`Registro insertado en ${tableName} correctamente.`, 'success');
+        cargarTablaOAVD();
+        form.reset();
+    } catch (e) {
+        showNotification('Error al insertar: ' + e.message, 'error');
+        error = true;
     }
 }
 
@@ -178,8 +236,8 @@ function validateAndFormatValue(value, type) {
         case 'BOOLEAN':
             return value === 'true';
         case 'DATE':
-            if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-                throw new Error('Formato de fecha inválido');
+            if (value && !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+                throw new Error('Formato de fecha inválido. Use AAAA-MM-DD');
             }
             return value;
         default:

@@ -69,12 +69,23 @@ function updateSearchFields() {
                     case 'BOOLEAN':
                         field.innerHTML = `
                             <label>${col.name}:</label>
-                            <select data-column="${col.name}">
-                                <option value="">Cualquier valor</option>
-                                <option value="true">Verdadero</option>
-                                <option value="false">Falso</option>
-                            </select>
+                            <input type="checkbox" data-column="${col.name}" class="tri-state-checkbox">
                         `;
+                        const checkbox = field.querySelector('input');
+                        checkbox.indeterminate = true; // Estado inicial: cualquiera
+                        checkbox.addEventListener('click', function() {
+                            // Ciclo: indeterminado -> marcado -> desmarcado -> indeterminado
+                            if (this.indeterminate) {
+                                this.checked = true;
+                                this.indeterminate = false;
+                            } else if (this.checked) {
+                                this.checked = false;
+                                this.indeterminate = false;
+                            } else {
+                                this.checked = false;
+                                this.indeterminate = true;
+                            }
+                        });
                         return;
                 }
                 if (!field.innerHTML) {
@@ -99,7 +110,11 @@ function applySearch() {
         const searchCriteria = {};
         document.querySelectorAll('#search-fields input, #search-fields select').forEach(input => {
             const value = input.value.trim();
-            if (value) {
+            if (input.type === 'checkbox') {
+                if (!input.indeterminate) { // Solo filtrar si no está en estado indeterminado
+                    searchCriteria[input.dataset.column] = input.checked;
+                }
+            } else if (value) {
                 searchCriteria[input.dataset.column] = value;
             }
         });
@@ -305,10 +320,7 @@ function editRecord(tableName, pkValue, event) {
                 const value = record[col.name] !== null ? record[col.name] : '';
                 switch (col.type) {
                     case 'BOOLEAN':
-                        input = `<select name="${col.name}">
-                            <option value="true" ${value ? 'selected' : ''}>Verdadero</option>
-                            <option value="false" ${!value ? 'selected' : ''}>Falso</option>
-                        </select>`;
+                        input = `<input type="checkbox" name="${col.name}" ${value ? 'checked' : ''}>`;
                         break;
                     case 'DATE':
                         input = `<input type="date" name="${col.name}" value="${value}">`;
@@ -355,6 +367,12 @@ function saveEditedRecord(tableName, pkValue, modal) {
             if (!col.pk) {
                 const input = modal.querySelector(`[name="${col.name}"]`);
                 if (input) {
+                    if (col.type === 'BOOLEAN') {
+                        updates.push(`${col.name} = ?`);
+                        values.push(input.checked);
+                        return; // Continuar con el siguiente campo
+                    }
+
                     let value = input.value.trim();
                     // Si el valor está vacío, asignar NULL
                     if (value === '') {
@@ -362,9 +380,6 @@ function saveEditedRecord(tableName, pkValue, modal) {
                     } else {
                         // Convertir el valor al tipo de dato correcto
                         switch (col.type) {
-                            case 'BOOLEAN':
-                                value = (value === 'true');
-                                break;
                             case 'INT':
                                 value = parseInt(value, 10);
                                 break;
