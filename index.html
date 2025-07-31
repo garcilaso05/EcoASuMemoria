@@ -16,6 +16,23 @@
     <script src="scripts/editFormFormatter.js"></script>
     <link rel="stylesheet" href="styles/checkboxes.css">
     <link rel="icon" type="image/png" href="styles/eSQLlogo.png">
+    <style>
+        .insertion-subtitle {
+            font-weight: bold;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            padding-bottom: 3px;
+            border-bottom: 1px solid #ccc;
+            text-align: left;
+            font-size: 1.1rem;
+            color: var(--color-primary);
+        }
+        #top-bar {
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-bottom: 1px solid #ccc;
+        }
+    </style>
 </head>
 <body>
     <div class="login-overlay" id="loginOverlay">
@@ -64,6 +81,11 @@
             <button id="helpBtn" class="top-btn">
                 <img src="styles/eSQL.png" alt="easySQL Guide" class="header-logo">
             </button>
+            <!-- Botón para subir archivos .esql -->
+            <label for="esql-upload" class="top-btn">
+                <img src="styles/upload.png" alt="Subir .esql">
+            </label>
+            <input type="file" id="esql-upload" accept=".esql" style="display: none;">
         </div>
         <div id="colorPickerPanel" class="color-picker-panel">
             <h2 class="settings-title">PERSONALIZACIÓN</h2>
@@ -586,6 +608,7 @@
     <script src="scripts/mapCoordinates.js"></script>
     <script src="scripts/colorTheme.js"></script>
     <script src="scripts/help.js"></script>
+    <script src="eSQL/custom-insert.js"></script>
     <!-- Añadir antes de cerrar el body -->
     <link rel="stylesheet" href="styles/insertions.css">
     <script src="scripts/labelScroller.js"></script>
@@ -904,6 +927,20 @@ window.onload = function() {
     document.getElementById('loginOverlay').style.display = 'flex';
     document.body.style.overflow = 'hidden';
 };
+
+// Lógica para el botón de subir archivos .esql
+document.getElementById('esql-upload').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const content = e.target.result;
+            // Aquí iría la lógica para procesar el contenido del archivo .esql
+            console.log('Contenido del archivo .esql:', content);
+        };
+        reader.readAsText(file);
+    }
+});
 </script>
 </body>
 </html>

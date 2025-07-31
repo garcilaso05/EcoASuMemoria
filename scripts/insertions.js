@@ -9,6 +9,15 @@ function setupInsertionsTab() {
             container.appendChild(tableSection);
         }
     }
+
+    // Reaplicar layouts personalizados si existen
+    if (window.customInsertLayouts) {
+        for (const tableName in window.customInsertLayouts) {
+            if (window.customInsertLayouts.hasOwnProperty(tableName)) {
+                processEsqlContent(window.customInsertLayouts[tableName]);
+            }
+        }
+    }
 }
 
 function createTableSection(tableName) {
@@ -81,7 +90,22 @@ function createInputField(column) {
 
 function toggleInsertForm(tableName) {
     const form = document.getElementById(`insert-form-${tableName}`);
-    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    const isVisible = form.style.display === 'block';
+
+    if (!isVisible) {
+        // Al mostrar el formulario, comprobar si hay un layout personalizado y aplicarlo
+        if (window.customInsertLayouts && window.customInsertLayouts[tableName]) {
+            // Primero, regeneramos el contenido original del formulario
+            const fields = schema.tables[tableName].columns.map(col => createInputField(col));
+            const insertFieldsContainer = form.querySelector('.insert-fields');
+            insertFieldsContainer.innerHTML = fields.join('');
+            
+            // Luego, aplicamos la personalización
+            processEsqlContent(window.customInsertLayouts[tableName]);
+        }
+    }
+
+    form.style.display = isVisible ? 'none' : 'block';
 }
 
 function insertData(tableName, continueInserting) {
