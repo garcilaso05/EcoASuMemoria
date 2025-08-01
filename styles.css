@@ -2921,3 +2921,50 @@ input:checked + .slider:before {
     margin: 1rem 0;
     border-radius: 4px;
 }
+
+/* Nuevos estilos para encabezados de inserción */
+.insertion-subtitle {
+    font-weight: bold;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    padding-bottom: 3px;
+    border-bottom: 1px solid #ccc;
+    text-align: left;
+    font-size: 1.1rem;
+    color: var(--color-primary);
+}
+
+.insertion-header {
+    font-weight: 600;
+    margin-top: 12px;
+    margin-bottom: 4px;
+    padding-bottom: 2px;
+    padding-left: 8px; /* Añadido padding izquierdo */
+    border-bottom: 1px dashed var(--color-border); /* Cambiado a línea discontinua */
+    text-align: left;
+    font-size: 0.95rem; /* Reducido tamaño de fuente */
+    color: var(--color-primary);
+}
+
+.insertion-secondary-header {
+    font-weight: 450;
+    margin-top: 15px; /* Aumentado margen superior */
+    margin-bottom: 15px; /* Aumentado margen inferior */
+    padding-left: 8px; /* Añadido padding izquierdo */
+    text-align: left;
+    font-size: 0.8rem;
+    color: var(--color-text);
+}
+
+.insertion-subtitle label,
+.insertion-header label,
+.insertion-secondary-header label {
+    display: block;
+    width: 100%;
+}
+
+#top-bar {
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #ccc;
+}
