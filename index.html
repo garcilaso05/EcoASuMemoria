@@ -452,10 +452,27 @@
     </div>
     <!-- Pestaña Consultas -->
     <div id="consultas" class="tab-content">
-        <h2>Consultas SQL</h2>
-        <textarea id="sql-input" placeholder="Escribe tu consulta SQL aquí (ej. INSERT, SELECT...)"></textarea>
-        <button onclick="executeSQL()">Ejecutar SQL</button>
-        <div id="result"></div>
+        <h2>Consultas con IA</h2>
+        <div class="ia-query-container">
+            <div class="ia-input-group centered">
+                <label for="apiKey">API Key de IA (ej. Gemini):</label>
+                <input type="password" id="apiKey" placeholder="Pega tu API Key aquí para usar la IA">
+            </div>
+            <div class="ia-input-group centered">
+                <label for="naturalQuery">Pregunta en lenguaje natural:</label>
+                <textarea id="naturalQuery" rows="4" placeholder="Ej: ¿Cuántas víctimas había en Barcelona en 2023?"></textarea>
+                <button onclick="generateAIQuery()">Generar Consulta SQL</button>
+            </div>
+            <div class="ia-input-group centered">
+                <label for="generatedSql">Consulta SQL generada (editable):</label>
+                <textarea id="generatedSql" rows="6" placeholder="Aquí aparecerá la consulta SQL generada..."></textarea>
+                <button onclick="executeGeneratedSQL()">Ejecutar Consulta</button>
+            </div>
+            <div class="ia-output">
+                <label>Resultado de la consulta:</label>
+                <pre id="sqlResult"></pre>
+            </div>
+        </div>
     </div>
     <!-- Pestaña Mapa -->
     <div id="mapa" class="tab-content">
@@ -745,6 +762,82 @@
 
 .dark-mode .faq-item p {
     color: #bbb;
+}
+
+/* Estilos para la nueva pestaña de Consultas con IA */
+.ia-query-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1rem;
+}
+.ia-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.ia-input-group.centered {
+    align-items: center;
+}
+.ia-input-group.centered input,
+.ia-input-group.centered textarea {
+    width: 80%;
+    max-width: 800px;
+}
+.ia-input-group.centered button {
+    width: auto;
+    align-self: center;
+    margin-top: 0.5rem;
+}
+.ia-input-group label {
+    font-weight: bold;
+    color: var(--color-primary);
+}
+.ia-input-group input, .ia-input-group textarea {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: inherit;
+}
+.ia-input-group button {
+    align-self: flex-start;
+    padding: 0.6rem 1.2rem;
+    background-color: #9b4f96;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+.ia-input-group button:hover {
+    background-color: #7e3f7a;
+}
+.sql-edit-container {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+.sql-edit-container textarea {
+    flex-grow: 1;
+}
+.ia-output {
+    margin-top: 1rem;
+}
+.ia-output pre {
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    padding: 1rem;
+    border-radius: 8px;
+    min-height: 50px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+.dark-mode .ia-output pre {
+    background-color: #2c2c2c;
+    border-color: #444;
+    color: #f0f0f0;
 }
 
 
