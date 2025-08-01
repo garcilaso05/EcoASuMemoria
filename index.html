@@ -165,28 +165,36 @@
             <div class="help-sidebar">
                 <nav class="help-navigation">
                     <ul>
-                        <li><a href="#proyecto" class="nav-item active">
-                            <span class="nav-icon">📋</span>
-                            <span class="nav-text">Sobre el Proyecto</span>
+                        <li><a href="#introduccion" class="nav-item active">
+                            <span class="nav-icon">👋</span>
+                            <span class="nav-text">Introducción</span>
                         </a></li>
-                        <li><a href="#acceso" class="nav-item">
-                            <span class="nav-icon">🔑</span>
-                            <span class="nav-text">Niveles de Acceso</span>
+                        <li><a href="#esquema-bd" class="nav-item">
+                            <span class="nav-icon">🏗️</span>
+                            <span class="nav-text">Esquema BD</span>
                         </a></li>
-                        <li><a href="#problemas-dev" class="nav-item">
-                            <span class="nav-icon">⚙️</span>
-                            <span class="nav-text">Problemas para Desarrolladores</span>
+                        <li><a href="#gestion-datos" class="nav-item">
+                            <span class="nav-icon">💾</span>
+                            <span class="nav-text">Gestión de Datos</span>
                         </a></li>
-                        <li><a href="#problemas-usuario" class="nav-item">
+                        <li><a href="#visualizacion" class="nav-item">
+                            <span class="nav-icon">📊</span>
+                            <span class="nav-text">Visualización</span>
+                        </a></li>
+                        <li><a href="#personalizacion" class="nav-item">
+                            <span class="nav-icon">🎨</span>
+                            <span class="nav-text">Personalización</span>
+                        </a></li>
+                        <li><a href="#faq" class="nav-item">
                             <span class="nav-icon">❓</span>
-                            <span class="nav-text">Dudas Frecuentes</span>
+                            <span class="nav-text">FAQ y Soporte</span>
                         </a></li>
                     </ul>
                 </nav>
             </div>
             <div class="help-main">
 
-                <section id="proyecto" class="help-section active">
+                <section id="introduccion" class="help-section active">
                     <div class="help-block visual-block">
                         <div class="block-header">
                             <h2>¿Qué es <span style="color:#9b4f96">ECO A SU MEMORIA</span>?</h2>
@@ -198,26 +206,17 @@
                             <div class="block-highlight">
                                 <span class="block-badge">Hackatón URV</span>
                                 <p>
-                                    El proyecto nació en una hackatón de la <strong>Universitat Rovira i Virgili</strong> de Tarragona, con un equipo interdisciplinar formado por Roger y Khady, entre otros compañeros y compañeras.
-                                </p>
-                            </div>
-                            <div class="block-highlight">
-                                <span class="block-badge">Reconocimiento</span>
-                                <p>
-                                    Fue uno de los mejores proyectos y ahora sigue creciendo gracias a una beca de la universidad.
+                                    El proyecto nació en una hackatón de la <strong>Universitat Rovira i Virgili</strong>, con un equipo interdisciplinar.
                                 </p>
                             </div>
                             <div class="block-highlight">
                                 <span class="block-badge">Objetivo</span>
                                 <p>
-                                    Facilitar el trabajo de quienes recopilan, gestionan y analizan información sobre feminicidios, permitiendo una gestión centralizada, segura y eficiente, así como una visualización clara y accesible para distintos perfiles de usuario.
+                                    Facilitar el trabajo de quienes recopilan, gestionan y analizan información sobre feminicidios, permitiendo una gestión centralizada, segura y eficiente.
                                 </p>
                             </div>
                         </div>
                     </div>
-                </section>
-
-                <section id="acceso" class="help-section">
                     <div class="help-block visual-block">
                         <div class="block-header">
                             <h2>Niveles de Acceso y Permisos</h2>
@@ -227,167 +226,160 @@
                                 <div class="access-card dev">
                                     <div class="access-title">👨‍💻 Desarrollador</div>
                                     <ul>
-                                        <li>Editar estructura de tablas</li>
-                                        <li>Crear/modificar enumerados</li>
-                                        <li>Gestionar todas las inserciones</li>
-                                        <li>Visualizar todos los datos</li>
+                                        <li>Control total sobre la estructura de la base de datos.</li>
+                                        <li>Gestión completa de datos.</li>
+                                        <li>Acceso a todas las funcionalidades.</li>
                                     </ul>
                                 </div>
                                 <div class="access-card admin">
                                     <div class="access-title">🛠️ Administrador</div>
                                     <ul>
-                                        <li>Gestionar inserciones (crear, editar, borrar)</li>
-                                        <li>Visualizar datos</li>
+                                        <li>Gestionar inserciones (crear, editar, borrar).</li>
+                                        <li>Visualizar y exportar datos.</li>
                                     </ul>
                                 </div>
                                 <div class="access-card externo">
                                     <div class="access-title">👀 Externo</div>
                                     <ul>
-                                        <li>Visualizar datos, mapas y gráficos</li>
+                                        <li>Visualizar datos, mapas y gráficos de forma anónima.</li>
                                     </ul>
                                 </div>
                             </div>
-                            <div class="block-note">
-                                <span class="block-badge">🔒 Seguridad</span>
-                                <p>
-                                    Cada usuario accede solo a las funciones necesarias para su perfil, garantizando la seguridad y la integridad de la información.
-                                </p>
-                            </div>
                         </div>
                     </div>
                 </section>
 
-                <section id="problemas-dev" class="help-section">
+                <section id="esquema-bd" class="help-section">
                     <div class="help-block visual-block">
                         <div class="block-header">
-                            <h2>Problemas Comunes para Desarrolladores</h2>
+                            <h2>Gestión del Esquema (Solo Desarrolladores)</h2>
                         </div>
                         <div class="block-content">
-                            <div class="faq-dev-list">
-                                <div class="faq-dev-item static-faq">
-                                    <div class="faq-question">❗ No se puede crear la tabla, ya existe una con ese nombre</div>
-                                    <div class="faq-answer">
-                                        Usa un nombre diferente o elimina la tabla existente antes de crear una nueva con el mismo nombre.
-                                    </div>
+                            <p>La pestaña <strong>Esquema</strong> es el centro de control para la estructura de tu base de datos.</p>
+                            <div class="feature-list">
+                                <div class="feature-item">
+                                    <h4>Crear Tablas</h4>
+                                    <p>Usa el botón "Crear Tabla" para definir nuevas tablas, sus columnas y tipos de datos (Texto, Número, Fecha, Booleano, etc.).</p>
                                 </div>
-                                <div class="faq-dev-item static-faq">
-                                    <div class="faq-question">❗ El nombre de la columna ya existe en la tabla</div>
-                                    <div class="faq-answer">
-                                        Asegúrate de que cada columna tenga un nombre único dentro de la tabla.
-                                    </div>
+                                <div class="feature-item">
+                                    <h4>Crear Enums</h4>
+                                    <p>Define listas de valores predefinidos (Enums) para usarlos como tipos de datos en tus tablas, garantizando la consistencia.</p>
                                 </div>
-                                <div class="faq-dev-item static-faq">
-                                    <div class="faq-question">❗ No se puede borrar la tabla, tiene datos asociados</div>
-                                    <div class="faq-answer">
-                                        Elimina primero los datos o relaciones asociadas antes de borrar la tabla.
-                                    </div>
-                                </div>
-                                <div class="faq-dev-item static-faq">
-                                    <div class="faq-question">❗ Valor duplicado para clave primaria</div>
-                                    <div class="faq-answer">
-                                        Cada valor de clave primaria (PK) debe ser único. Revisa los datos antes de insertar.
-                                    </div>
-                                </div>
-                                <div class="faq-dev-item static-faq">
-                                    <div class="faq-question">❗ Tipo de dato incorrecto</div>
-                                    <div class="faq-answer">
-                                        Comprueba que los valores insertados coincidan con el tipo de dato definido en la columna (por ejemplo, no poner texto en una columna numérica).
-                                    </div>
-                                </div>
-                                <div class="faq-dev-item static-faq">
-                                    <div class="faq-question">❗ ENUM no válido</div>
-                                    <div class="faq-answer">
-                                        Solo puedes usar valores definidos en el ENUM. Añade el valor al ENUM si es necesario.
-                                    </div>
-                                </div>
-                                <div class="faq-dev-item static-faq">
-                                    <div class="faq-question">❗ No se puede borrar ENUM, está en uso</div>
-                                    <div class="faq-answer">
-                                        Cambia el tipo de las columnas que usan ese ENUM antes de borrarlo.
-                                    </div>
-                                </div>
-                                <div class="faq-dev-item static-faq">
-                                    <div class="faq-question">❗ No se puede crear relación, tablas incompatibles</div>
-                                    <div class="faq-answer">
-                                        Revisa que las tablas tengan columnas compatibles para la relación seleccionada.
-                                    </div>
-                                </div>
-                                <div class="faq-dev-item static-faq">
-                                    <div class="faq-question">❗ Problemas de visualización de datos/mapas/gráficos</div>
-                                    <div class="faq-answer">
-                                        Comprueba que los datos estén correctamente insertados y que las columnas seleccionadas sean del tipo adecuado.
-                                    </div>
-                                </div>
-                                <div class="faq-dev-item static-faq">
-                                    <div class="faq-question">❗ Errores de importación desde Excel</div>
-                                    <div class="faq-answer">
-                                        Asegúrate de que el formato de los datos coincida con el esperado y que no haya celdas vacías en campos obligatorios.
-                                    </div>
-                                </div>
-                                <div class="faq-dev-item static-faq">
-                                    <div class="faq-question">⚠️ Advertencia: Cambios no guardados</div>
-                                    <div class="faq-answer">
-                                        Guarda los cambios antes de salir o cambiar de pestaña para no perder el trabajo realizado.
-                                    </div>
+                                <div class="feature-item">
+                                    <h4>Relaciones</h4>
+                                    <p>Crea relaciones entre tablas directamente desde el diagrama visual para conectar tus datos de forma lógica.</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <section id="problemas-usuario" class="help-section">
+                <section id="gestion-datos" class="help-section">
                     <div class="help-block visual-block">
                         <div class="block-header">
-                            <h2>Dudas Frecuentes de Usuarios</h2>
+                            <h2>Inserción y Gestión de Datos</h2>
                         </div>
                         <div class="block-content">
-                            <div class="faq-user-list">
-                                <div class="faq-user-item static-faq">
-                                    <div class="faq-question">¿Por qué no puedo editar los datos?</div>
-                                    <div class="faq-answer">
-                                        Es posible que tu perfil sea "Externo" y solo tengas permisos de visualización. Si necesitas editar, contacta con un administrador.
+                            <p>La aplicación ofrece dos formas flexibles de introducir y modificar datos:</p>
+                            <div class="feature-list">
+                                <div class="feature-item">
+                                    <h4>Formularios Dinámicos (Pestaña Inserciones)</h4>
+                                    <p>Para cada tabla, se genera un formulario a medida. Ideal para añadir registros uno por uno de forma guiada.</p>
+                                </div>
+                                <div class="feature-item">
+                                    <h4>Interfaz tipo Excel (Pestaña Excel Import)</h4>
+                                    <p>Perfecta para inserciones masivas. Selecciona una tabla y añade o modifica múltiples filas a la vez en una parrilla intuitiva.</p>
+                                </div>
+                                <div class="feature-item">
+                                    <h4>Visualización y Borrado (Pestaña Datos)</h4>
+                                    <p>Consulta todos los datos insertados en tablas, con opciones para buscar, filtrar y eliminar registros.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="visualizacion" class="help-section">
+                    <div class="help-block visual-block">
+                        <div class="block-header">
+                            <h2>Visualización de Datos: Mapas y Gráficos</h2>
+                        </div>
+                        <div class="block-content">
+                            <p>Transforma tus datos en información visual y comprensible.</p>
+                            <div class="feature-list">
+                                <div class="feature-item">
+                                    <h4>Mapas Interactivos (Pestaña Mapa)</h4>
+                                    <p>Selecciona una tabla y una columna con coordenadas o nombres de lugares para visualizar tus datos geográficamente.</p>
+                                </div>
+                                <div class="feature-item">
+                                    <h4>Gráficos Dinámicos (Pestaña Gráficos)</h4>
+                                    <p>Elige una tabla, una columna y un tipo de gráfico (circular, barras, etc.) para analizar la distribución de tus datos.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="personalizacion" class="help-section">
+                    <div class="help-block visual-block">
+                        <div class="block-header">
+                            <h2>Personaliza tu Experiencia</h2>
+                        </div>
+                        <div class="block-content">
+                            <p>Ajusta la apariencia de la aplicación a tu gusto desde el panel de personalización (icono de paleta de colores).</p>
+                            <div class="feature-list">
+                                <div class="feature-item">
+                                    <h4>Tema Oscuro y Claro</h4>
+                                    <p>Activa el modo oscuro para una visualización más cómoda en entornos con poca luz.</p>
+                                </div>
+                                <div class="feature-item">
+                                    <h4>Animaciones</h4>
+                                    <p>Activa o desactiva las animaciones de la interfaz, como el título flotante o las partículas de fondo.</p>
+                                </div>
+                                <div class="feature-item">
+                                    <h4>Layout de Inserción (.esql)</h4>
+                                    <p>Los desarrolladores pueden subir un archivo <code>.esql</code> para definir un layout de inserción personalizado y más complejo.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="faq" class="help-section">
+                    <div class="help-block visual-block">
+                        <div class="block-header">
+                            <h2>Preguntas Frecuentes y Soluciones</h2>
+                        </div>
+                        <div class="block-content">
+                            <div class="faq-columns">
+                                <div class="faq-column">
+                                    <h4>Para Desarrolladores</h4>
+                                    <div class="faq-item">
+                                        <strong>Error: "La tabla ya existe"</strong>
+                                        <p>Usa un nombre único o elimina la tabla existente antes de crearla.</p>
+                                    </div>
+                                    <div class="faq-item">
+                                        <strong>Error: "Clave primaria duplicada"</strong>
+                                        <p>El valor de la columna PK debe ser único para cada registro.</p>
+                                    </div>
+                                    <div class="faq-item">
+                                        <strong>Error: "ENUM no válido"</strong>
+                                        <p>El valor que intentas insertar no está en la lista de opciones del ENUM. Debes añadirlo primero.</p>
                                     </div>
                                 </div>
-                                <div class="faq-user-item static-faq">
-                                    <div class="faq-question">¿Qué significa "clave primaria duplicada"?</div>
-                                    <div class="faq-answer">
-                                        Cada registro debe tener un identificador único. Si ves este mensaje, revisa que no estés repitiendo el mismo valor en la columna identificadora (PK).
+                                <div class="faq-column">
+                                    <h4>Para Administradores y Usuarios</h4>
+                                    <div class="faq-item">
+                                        <strong>¿Por qué no puedo editar el esquema?</strong>
+                                        <p>Solo los perfiles de "Desarrollador" tienen permisos para modificar la estructura de la base de datos.</p>
                                     </div>
-                                </div>
-                                <div class="faq-user-item static-faq">
-                                    <div class="faq-question">¿Por qué no puedo dejar un campo vacío?</div>
-                                    <div class="faq-answer">
-                                        Algunos campos son obligatorios (NOT NULL). Debes rellenarlos para poder guardar el registro.
+                                    <div class="faq-item">
+                                        <strong>¿Qué hago si no aparece una opción en un desplegable?</strong>
+                                        <p>Esa lista (ENUM) es fija. Contacta con un desarrollador para que añada la nueva opción.</p>
                                     </div>
-                                </div>
-                                <div class="faq-user-item static-faq">
-                                    <div class="faq-question">¿Qué hago si no aparece la opción que necesito en una lista?</div>
-                                    <div class="faq-answer">
-                                        Las listas (ENUM) solo permiten valores predefinidos. Si falta una opción, contacta con un administrador o desarrollador para que la añada.
-                                    </div>
-                                </div>
-                                <div class="faq-user-item static-faq">
-                                    <div class="faq-question">¿Por qué no veo datos en el mapa o en los gráficos?</div>
-                                    <div class="faq-answer">
-                                        Puede que no haya datos insertados o que no hayas seleccionado la tabla/columna correcta. Prueba a cambiar la selección o consulta con un responsable.
-                                    </div>
-                                </div>
-                                <div class="faq-user-item static-faq">
-                                    <div class="faq-question">¿Qué significa "tipo de dato incorrecto"?</div>
-                                    <div class="faq-answer">
-                                        Estás intentando poner un valor que no corresponde (por ejemplo, texto en un campo numérico o fecha en formato incorrecto). Revisa el tipo de dato esperado.
-                                    </div>
-                                </div>
-                                <div class="faq-user-item static-faq">
-                                    <div class="faq-question">¿Cómo puedo exportar los datos?</div>
-                                    <div class="faq-answer">
-                                        Usa el botón "Descargar" en la sección correspondiente para obtener los datos en formato SQL o Excel.
-                                    </div>
-                                </div>
-                                <div class="faq-user-item static-faq">
-                                    <div class="faq-question">¿Qué hago si la aplicación no responde?</div>
-                                    <div class="faq-answer">
-                                        Prueba a recargar la página. Si el problema persiste, contacta con el soporte o un administrador.
+                                    <div class="faq-item">
+                                        <strong>Los datos no aparecen en el mapa/gráfico.</strong>
+                                        <p>Asegúrate de que los datos estén bien insertados y que las columnas seleccionadas sean las correctas (ej. una columna de texto para un mapa).</p>
                                     </div>
                                 </div>
                             </div>
@@ -687,6 +679,74 @@
     background: #7e3f7a;
     color: #fff;
 }
+
+.feature-list {
+    margin-top: 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.feature-item h4 {
+    color: #9b4f96;
+    margin-bottom: 0.5rem;
+}
+
+.feature-item p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #666;
+}
+
+.dark-mode .feature-item p {
+    color: #ccc;
+}
+
+.faq-columns {
+    display: flex;
+    gap: 2rem;
+}
+
+.faq-column {
+    flex: 1;
+}
+
+.faq-column h4 {
+    color: #9b4f96;
+    border-bottom: 2px solid #f5edff;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.dark-mode .faq-column h4 {
+    border-bottom-color: #3a2950;
+}
+
+.faq-item {
+    margin-bottom: 1.5rem;
+}
+
+.faq-item strong {
+    display: block;
+    color: #7e3f7a;
+    margin-bottom: 0.3rem;
+}
+
+.dark-mode .faq-item strong {
+    color: #e4cdff;
+}
+
+.faq-item p {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #666;
+    margin: 0;
+}
+
+.dark-mode .faq-item p {
+    color: #bbb;
+}
+
 
 /* Estilos para los bloques de contenido */
 .faq-dev-list, .faq-user-list {

@@ -300,46 +300,130 @@ function editRecord(tableName, pkValue, event) {
     }
     
     let html = `<div class="edit-form">`;
-    schema.tables[tableName].columns.forEach(col => {
-        if (col.pk) {
-            html += `<div class="input-field">
-                <label>${col.name}:</label>
-                <input type="text" value="${record[col.name]}" disabled 
-                    title="Las claves primarias no se pueden editar">
-            </div>`;
-        } else {
-            let input = '';
-            if (schema.tables[col.type]?.isEnum) {
-                input = `<select name="${col.name}">
-                    <option value="">NULL</option>
-                    ${schema.tables[col.type].values.map(value => 
-                        `<option value="${value}" ${record[col.name] === value ? 'selected' : ''}>${value}</option>`
-                    ).join('')}
-                </select>`;
+    
+    // Check if there's a custom layout for this table
+    if (window.customInsertLayouts && window.customInsertLayouts[tableName]) {
+        // Create a temporary container to generate the custom layout
+        const tempDiv = document.createElement('div');
+        tempDiv.className = 'insert-fields';
+        
+        // Generate standard fields first
+        schema.tables[tableName].columns.forEach(col => {
+            if (col.pk) {
+                tempDiv.innerHTML += `<div class="input-field">
+                    <label>${col.name}:</label>
+                    <input type="text" value="${record[col.name]}" disabled 
+                        title="Las claves primarias no se pueden editar">
+                </div>`;
             } else {
-                const value = record[col.name] !== null ? record[col.name] : '';
-                switch (col.type) {
-                    case 'BOOLEAN':
-                        input = `<input type="checkbox" name="${col.name}" ${value ? 'checked' : ''}>`;
-                        break;
-                    case 'DATE':
-                        input = `<input type="date" name="${col.name}" value="${value}">`;
-                        break;
-                    case 'INT':
-                        input = `<input type="number" name="${col.name}" value="${value}" step="1">`;
-                        break;
-                    case 'FLOAT':
-                        input = `<input type="number" name="${col.name}" value="${value}" step="0.01">`;
-                        break;
-                    default:
-                        input = `<input type="text" name="${col.name}" value="${value}">`;
+                // ...existing field generation code...
+                if (schema.tables[col.type]?.isEnum) {
+                    const options = schema.tables[col.type].values
+                        .map(value => `<option value="${value}" ${record[col.name] === value ? 'selected' : ''}>${value}</option>`)
+                        .join('');
+                    tempDiv.innerHTML += `<div class="input-field">
+                        <label>${col.name}:</label>
+                        <select name="${col.name}">
+                            <option value="">Seleccione...</option>
+                            ${options}
+                        </select>
+                    </div>`;
+                } else {
+                    switch (col.type) {
+                        case 'DATE':
+                            tempDiv.innerHTML += `<div class="input-field">
+                                <label>${col.name}:</label>
+                                <input type="date" name="${col.name}" value="${record[col.name] || ''}">
+                            </div>`;
+                            break;
+                        case 'INT':
+                            tempDiv.innerHTML += `<div class="input-field">
+                                <label>${col.name}:</label>
+                                <input type="number" name="${col.name}" step="1" value="${record[col.name] || ''}">
+                            </div>`;
+                            break;
+                        case 'FLOAT':
+                            tempDiv.innerHTML += `<div class="input-field">
+                                <label>${col.name}:</label>
+                                <input type="number" name="${col.name}" step="0.01" value="${record[col.name] || ''}">
+                            </div>`;
+                            break;
+                        case 'BOOLEAN':
+                            tempDiv.innerHTML += `<div class="input-field">
+                                <label>${col.name}:</label>
+                                <input type="checkbox" name="${col.name}" ${record[col.name] ? 'checked' : ''}>
+                            </div>`;
+                            break;
+                        default:
+                            tempDiv.innerHTML += `<div class="input-field">
+                                <label>${col.name}:</label>
+                                <input type="text" name="${col.name}" value="${record[col.name] || ''}">
+                            </div>`;
+                    }
                 }
             }
-            html += `<div class="input-field"><label>${col.name}:</label>${input}</div>`;
+        });
+        
+        // Apply custom layout structure
+        try {
+            const content = window.customInsertLayouts[tableName];
+            const lines = content.split('\n').map(line => line.trim()).filter(line => line);
+            
+            // Get existing fields
+            const existingFields = new Map();
+            tempDiv.querySelectorAll('.input-field').forEach(fieldDiv => {
+                const input = fieldDiv.querySelector('input, select, textarea');
+                if (input && (input.name || input.getAttribute('name'))) {
+                    const fieldName = input.name || input.getAttribute('name');
+                    existingFields.set(fieldName, fieldDiv.outerHTML);
+                }
+            });
+            
+            // Build custom layout
+            let customHtml = '';
+            for (let i = 1; i < lines.length - 1; i++) {
+                const line = lines[i];
+                
+                if (line.startsWith('+++')) {
+                    const headerText = line.substring(3).trim();
+                    customHtml += `<div class="insertion-secondary-header"><label>${headerText}</label></div>`;
+                } else if (line.startsWith('++')) {
+                    const headerText = line.substring(2).trim();
+                    customHtml += `<div class="insertion-header"><label>${headerText}</label></div>`;
+                } else if (line.startsWith('+')) {
+                    const subtitleText = line.substring(1).trim();
+                    customHtml += `<div class="insertion-subtitle"><label>${subtitleText}</label></div>`;
+                } else if (line.startsWith('-')) {
+                    const fieldName = line.substring(1).trim();
+                    if (existingFields.has(fieldName)) {
+                        customHtml += existingFields.get(fieldName);
+                    }
+                }
+            }
+            
+            html += customHtml;
+        } catch (error) {
+            console.error('Error applying custom layout to edit form:', error);
+            // Fallback to standard layout
+            html += tempDiv.innerHTML;
         }
-    });
+    } else {
+        // Standard layout without custom structure
+        schema.tables[tableName].columns.forEach(col => {
+            if (col.pk) {
+                html += `<div class="input-field">
+                    <label>${col.name}:</label>
+                    <input type="text" value="${record[col.name]}" disabled 
+                        title="Las claves primarias no se pueden editar">
+                </div>`;
+            } else {
+                // ...existing code for standard field generation...
+            }
+        });
+    }
+    
     html += `</div>`;
-
+    
     const modal = document.createElement('div');
     modal.className = 'modal';
     modal.style.display = 'block';

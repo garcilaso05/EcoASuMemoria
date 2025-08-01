@@ -53,7 +53,10 @@ function createTableSection(tableName) {
 }
 
 function createInputField(column) {
-    const label = `<label>${column.name}:</label>`;
+    // Add red asterisk for NOT NULL fields and primary keys
+    const isRequired = column.notNull || column.pk;
+    const asterisk = isRequired ? '<span style="color: red;">*</span>' : '';
+    const label = `<label>${column.name}: ${asterisk}</label>`;
     let input = '';
 
     if (schema.tables[column.type]?.isEnum) {

@@ -190,6 +190,11 @@ input[type="checkbox"]:disabled:checked {
     display: inline-block;
 }
 
+/* Añadir padding izquierdo a los checkboxes en input-field para alineación */
+.input-field input[type="checkbox"] {
+    margin-left: 0.5rem;
+}
+
 /* Ajustar el contenedor de los input-field para checkboxes */
 .input-field:has(input[type="checkbox"]) {
     display: flex;
