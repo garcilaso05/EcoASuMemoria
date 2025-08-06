@@ -55,6 +55,10 @@ function openEditTableModal() {
                 ${col.notNull ? 'checked' : ''} 
                 ${col.pk ? 'disabled' : ''}> NOT NULL</label>
             <button onclick="removeColumnInput(this)" class="remove-column" ${col.pk ? 'disabled' : ''}>Eliminar</button>
+            <div class="column-order-buttons">
+                <button onclick="moveColumn(this, 'up')" class="move-col-btn up-btn">▲</button>
+                <button onclick="moveColumn(this, 'down')" class="move-col-btn down-btn">▼</button>
+            </div>
         `;
         container.appendChild(newInput);
 
@@ -68,6 +72,7 @@ function openEditTableModal() {
     container.style.overflowY = 'auto';
 
     document.getElementById('editTableModal').style.display = 'block';
+    updateColumnOrderButtons(container);
 }
 
 function handleNotNullChange(checkbox, tableName, columnName) {
@@ -351,6 +356,10 @@ function addColumnInputEdit() {
         <label><input type="checkbox" class="col-pk" disabled> Clave Primaria</label>
         <label><input type="checkbox" class="col-notnull"> NOT NULL</label>
         <button onclick="removeColumnInput(this)">Eliminar</button>
+        <div class="column-order-buttons">
+            <button onclick="moveColumn(this, 'up')" class="move-col-btn up-btn">▲</button>
+            <button onclick="moveColumn(this, 'down')" class="move-col-btn down-btn">▼</button>
+        </div>
     `;
     container.appendChild(newInput);
 
@@ -360,11 +369,12 @@ function addColumnInputEdit() {
 
     // Scroll hasta el final
     container.scrollTop = container.scrollHeight;
+    updateColumnOrderButtons(container);
 }
 
 // Actualización de la función removeColumnInput para ambos casos
 function removeColumnInput(button) {
-    const columnDiv = button.parentElement;
+    const columnDiv = button.closest('.column-input');
     const isPK = columnDiv.querySelector('.col-pk').checked;
     
     if (isPK && document.getElementById('editTableModal').style.display === 'block') {
@@ -374,4 +384,5 @@ function removeColumnInput(button) {
     
     const container = columnDiv.parentElement;
     container.removeChild(columnDiv);
+    updateColumnOrderButtons(container);
 }
