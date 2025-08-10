@@ -291,85 +291,52 @@ function editRecord(tableName, pkValue, event) {
     if (pkColumn.type === 'INT' || pkColumn.type === 'FLOAT') {
         pkVal = Number(pkValue);
     }
-    console.log('Intentando editar:', { tableName, pkColumn, pkValue, tipo: typeof pkValue });
     const record = alasql(`SELECT * FROM ${tableName} WHERE ${pkColumn.name} = ?`, [pkVal])[0];
 
     if (!record) {
         alert('No se encontró el registro para editar.');
         return;
     }
-    
+
     let html = `<div class="edit-form">`;
-    
-    // Check if there's a custom layout for this table
+
+    // Si hay layout personalizado, úsalo
     if (window.customInsertLayouts && window.customInsertLayouts[tableName]) {
-        // Create a temporary container to generate the custom layout
         const tempDiv = document.createElement('div');
         tempDiv.className = 'insert-fields';
-        
-        // Generate standard fields first
+
+        // Genera todos los campos estándar
         schema.tables[tableName].columns.forEach(col => {
+            let inputHtml = '';
             if (col.pk) {
-                tempDiv.innerHTML += `<div class="input-field">
-                    <label>${col.name}:</label>
-                    <input type="text" value="${record[col.name]}" disabled 
-                        title="Las claves primarias no se pueden editar">
-                </div>`;
+                inputHtml = `<input type="text" value="${record[col.name]}" disabled title="Las claves primarias no se pueden editar">`;
+            } else if (schema.tables[col.type]?.isEnum) {
+                const options = schema.tables[col.type].values
+                    .map(value => `<option value="${value}" ${record[col.name] === value ? 'selected' : ''}>${value}</option>`)
+                    .join('');
+                inputHtml = `<select name="${col.name}"><option value="">Seleccione...</option>${options}</select>`;
             } else {
-                // ...existing field generation code...
-                if (schema.tables[col.type]?.isEnum) {
-                    const options = schema.tables[col.type].values
-                        .map(value => `<option value="${value}" ${record[col.name] === value ? 'selected' : ''}>${value}</option>`)
-                        .join('');
-                    tempDiv.innerHTML += `<div class="input-field">
-                        <label>${col.name}:</label>
-                        <select name="${col.name}">
-                            <option value="">Seleccione...</option>
-                            ${options}
-                        </select>
-                    </div>`;
-                } else {
-                    switch (col.type) {
-                        case 'DATE':
-                            tempDiv.innerHTML += `<div class="input-field">
-                                <label>${col.name}:</label>
-                                <input type="date" name="${col.name}" value="${record[col.name] || ''}">
-                            </div>`;
-                            break;
-                        case 'INT':
-                            tempDiv.innerHTML += `<div class="input-field">
-                                <label>${col.name}:</label>
-                                <input type="number" name="${col.name}" step="1" value="${record[col.name] || ''}">
-                            </div>`;
-                            break;
-                        case 'FLOAT':
-                            tempDiv.innerHTML += `<div class="input-field">
-                                <label>${col.name}:</label>
-                                <input type="number" name="${col.name}" step="0.01" value="${record[col.name] || ''}">
-                            </div>`;
-                            break;
-                        case 'BOOLEAN':
-                            tempDiv.innerHTML += `<div class="input-field">
-                                <label>${col.name}:</label>
-                                <input type="checkbox" name="${col.name}" ${record[col.name] ? 'checked' : ''}>
-                            </div>`;
-                            break;
-                        default:
-                            tempDiv.innerHTML += `<div class="input-field">
-                                <label>${col.name}:</label>
-                                <input type="text" name="${col.name}" value="${record[col.name] || ''}">
-                            </div>`;
-                    }
+                const value = record[col.name] !== null ? record[col.name] : '';
+                switch (col.type) {
+                    case 'DATE':
+                        inputHtml = `<input type="date" name="${col.name}" value="${value}">`; break;
+                    case 'INT':
+                        inputHtml = `<input type="number" name="${col.name}" step="1" value="${value}">`; break;
+                    case 'FLOAT':
+                        inputHtml = `<input type="number" name="${col.name}" step="0.01" value="${value}">`; break;
+                    case 'BOOLEAN':
+                        inputHtml = `<input type="checkbox" name="${col.name}" ${record[col.name] ? 'checked' : ''}>`; break;
+                    default:
+                        inputHtml = `<input type="text" name="${col.name}" value="${value}">`;
                 }
             }
+            tempDiv.innerHTML += `<div class="input-field"><label>${col.name}:</label>${inputHtml}</div>`;
         });
-        
-        // Apply custom layout structure
+
+        // Aplica el layout personalizado
         try {
             const content = window.customInsertLayouts[tableName];
             const lines = content.split('\n').map(line => line.trim()).filter(line => line);
-            
-            // Get existing fields
             const existingFields = new Map();
             tempDiv.querySelectorAll('.input-field').forEach(fieldDiv => {
                 const input = fieldDiv.querySelector('input, select, textarea');
@@ -378,52 +345,66 @@ function editRecord(tableName, pkValue, event) {
                     existingFields.set(fieldName, fieldDiv.outerHTML);
                 }
             });
-            
-            // Build custom layout
+
             let customHtml = '';
             for (let i = 1; i < lines.length - 1; i++) {
                 const line = lines[i];
-                
                 if (line.startsWith('+++')) {
-                    const headerText = line.substring(3).trim();
-                    customHtml += `<div class="insertion-secondary-header"><label>${headerText}</label></div>`;
+                    customHtml += `<div class="insertion-secondary-header"><label>${line.substring(3).trim()}</label></div>`;
                 } else if (line.startsWith('++')) {
-                    const headerText = line.substring(2).trim();
-                    customHtml += `<div class="insertion-header"><label>${headerText}</label></div>`;
+                    customHtml += `<div class="insertion-header"><label>${line.substring(2).trim()}</label></div>`;
                 } else if (line.startsWith('+')) {
-                    const subtitleText = line.substring(1).trim();
-                    customHtml += `<div class="insertion-subtitle"><label>${subtitleText}</label></div>`;
+                    customHtml += `<div class="insertion-subtitle"><label>${line.substring(1).trim()}</label></div>`;
                 } else if (line.startsWith('-')) {
                     const fieldName = line.substring(1).trim();
                     if (existingFields.has(fieldName)) {
                         customHtml += existingFields.get(fieldName);
+                        existingFields.delete(fieldName); // Para no repetir campos
                     }
                 }
             }
-            
             html += customHtml;
+
+            // Añade los campos que no se incluyeron en el layout personalizado
+            existingFields.forEach(fieldHtml => {
+                html += fieldHtml;
+            });
         } catch (error) {
             console.error('Error applying custom layout to edit form:', error);
-            // Fallback to standard layout
             html += tempDiv.innerHTML;
         }
     } else {
-        // Standard layout without custom structure
+        // Layout estándar: muestra todos los campos
         schema.tables[tableName].columns.forEach(col => {
+            let inputHtml = '';
             if (col.pk) {
-                html += `<div class="input-field">
-                    <label>${col.name}:</label>
-                    <input type="text" value="${record[col.name]}" disabled 
-                        title="Las claves primarias no se pueden editar">
-                </div>`;
+                inputHtml = `<input type="text" value="${record[col.name]}" disabled title="Las claves primarias no se pueden editar">`;
+            } else if (schema.tables[col.type]?.isEnum) {
+                const options = schema.tables[col.type].values
+                    .map(value => `<option value="${value}" ${record[col.name] === value ? 'selected' : ''}>${value}</option>`)
+                    .join('');
+                inputHtml = `<select name="${col.name}"><option value="">Seleccione...</option>${options}</select>`;
             } else {
-                // ...existing code for standard field generation...
+                const value = record[col.name] !== null ? record[col.name] : '';
+                switch (col.type) {
+                    case 'DATE':
+                        inputHtml = `<input type="date" name="${col.name}" value="${value}">`; break;
+                    case 'INT':
+                        inputHtml = `<input type="number" name="${col.name}" step="1" value="${value}">`; break;
+                    case 'FLOAT':
+                        inputHtml = `<input type="number" name="${col.name}" step="0.01" value="${value}">`; break;
+                    case 'BOOLEAN':
+                        inputHtml = `<input type="checkbox" name="${col.name}" ${record[col.name] ? 'checked' : ''}>`; break;
+                    default:
+                        inputHtml = `<input type="text" name="${col.name}" value="${value}">`;
+                }
             }
+            html += `<div class="input-field"><label>${col.name}:</label>${inputHtml}</div>`;
         });
     }
-    
+
     html += `</div>`;
-    
+
     const modal = document.createElement('div');
     modal.className = 'modal';
     modal.style.display = 'block';
