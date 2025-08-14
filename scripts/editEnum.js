@@ -20,21 +20,15 @@ async function openEditEnumModal() {
 
     if (enumUsage.length > 0) {
         const message = 
-            `⚠️ ADVERTENCIA IMPORTANTE ⚠️\n\n` +
+            `⚠️ INFORMACIÓN IMPORTANTE ⚠️\n\n` +
             `Este enum está siendo utilizado en las siguientes tablas:\n${enumUsage.join(', ')}\n\n` +
-            'La modificación de valores puede causar:\n' +
-            '- Inconsistencias en los datos existentes\n' +
-            '- Errores en las restricciones CHECK\n' +
-            '- Problemas con las inserciones existentes\n\n' +
-            '🚨 ELIMINACIÓN DE VALORES:\n' +
-            'Si elimina un valor del enum, se BORRARÁN AUTOMÁTICAMENTE\n' +
-            'TODOS los registros que contengan ese valor en cualquier tabla.\n' +
-            'Esta acción NO SE PUEDE DESHACER.\n\n' +
-            '✅ AÑADIR VALORES: Es seguro y no afecta datos existentes.\n\n' +
-            '¿Está COMPLETAMENTE SEGURO de que desea continuar con la edición?';
+            'IMPORTANTE:\n' +
+            '• Si ELIMINA un valor del enum, se BORRARÁN AUTOMÁTICAMENTE todos los registros que contengan ese valor\n' +
+            '• Si AÑADE valores nuevos, no afectará a los datos existentes\n' +
+            '• Los cambios no se pueden deshacer\n\n' +
+            'Proceda con precaución al editar este enum.';
 
-        const shouldContinue = await showCriticalWarning(message);
-        if (!shouldContinue) return;
+        alert(message);
     }
 
     const enumData = schema.tables[enumName];
@@ -44,6 +38,10 @@ async function openEditEnumModal() {
     }
 
     const container = document.getElementById('editEnumValuesContainer');
+    if (!container) {
+        console.error('Container editEnumValuesContainer not found!');
+        return;
+    }
     container.innerHTML = ''; // Reiniciar el contenedor
 
     enumData.values.forEach(value => {
@@ -60,8 +58,20 @@ async function openEditEnumModal() {
     container.style.maxHeight = '300px';
     container.style.overflowY = 'auto';
 
-    document.getElementById('editEnumName').value = enumName;
-    document.getElementById('editEnumModal').style.display = 'block';
+    const enumNameInput = document.getElementById('editEnumName');
+    const modal = document.getElementById('editEnumModal');
+    
+    if (!enumNameInput) {
+        console.error('editEnumName input not found!');
+        return;
+    }
+    if (!modal) {
+        console.error('editEnumModal not found!');
+        return;
+    }
+
+    enumNameInput.value = enumName;
+    modal.style.display = 'block';
 }
 
 function addEnumValueInput() {
@@ -100,6 +110,7 @@ function saveEnumChanges() {
         
         let deletedRecordsInfo = '';
         let totalDeletedRecords = 0;
+        const tablesToUpdate = [];
 
         // Si hay valores eliminados, limpiar los datos que los usan
         if (removedValues.length > 0) {
@@ -109,6 +120,7 @@ function saveEnumChanges() {
                     const enumColumns = table.columns.filter(col => col.type === enumName);
                     
                     if (enumColumns.length > 0) {
+                        tablesToUpdate.push(tableName);
                         for (const removedValue of removedValues) {
                             for (const column of enumColumns) {
                                 try {
@@ -135,14 +147,126 @@ function saveEnumChanges() {
             }
         }
 
+        // Identificar todas las tablas que usan este enum (incluso si no se eliminaron valores)
+        for (const tableName in schema.tables) {
+            if (!schema.tables[tableName].isEnum) {
+                const table = schema.tables[tableName];
+                const enumColumns = table.columns.filter(col => col.type === enumName);
+                if (enumColumns.length > 0 && !tablesToUpdate.includes(tableName)) {
+                    tablesToUpdate.push(tableName);
+                }
+            }
+        }
+
         // Actualizar los valores del enum
         schema.tables[enumName].values = newValues;
+
+        // Reconstruir las tablas que usan este enum con los nuevos CHECK constraints
+        for (const tableName of tablesToUpdate) {
+            try {
+                // Obtener datos existentes
+                const existingData = alasql(`SELECT * FROM ${tableName}`);
+                
+                // Usar el migrador de datos para preservar mejor los datos
+                const migrator = new TableDataMigrator();
+                const oldStructure = [...schema.tables[tableName].columns];
+                
+                // Crear nueva estructura con los CHECK constraints actualizados
+                const newStructure = schema.tables[tableName].columns.map(col => {
+                    const newCol = { ...col };
+                    if (col.type === enumName) {
+                        // Actualizar el check constraint en la definición
+                        newCol.check = {
+                            type: enumName,
+                            values: newValues
+                        };
+                    }
+                    return newCol;
+                });
+
+                // Usar el migrador para ejecutar la migración
+                const migrationResult = migrator.executeMigration(tableName, oldStructure, newStructure);
+                
+                // Actualizar el esquema con la nueva estructura
+                schema.tables[tableName].columns = newStructure;
+                
+                console.log(`Tabla ${tableName} migrada exitosamente. Registros migrados: ${migrationResult.recordsMigrated}`);
+                
+            } catch (error) {
+                console.error(`Error al actualizar tabla ${tableName}:`, error);
+                
+                // Fallback: método manual con corrección de SQL
+                try {
+                    const existingData = alasql(`SELECT * FROM ${tableName}`);
+                    const table = schema.tables[tableName];
+                    
+                    const columns = table.columns.map(col => {
+                        let colDef = `${col.name} ${col.type}`;
+                        
+                        if (col.pk) {
+                            colDef += ' PRIMARY KEY';
+                        } else if (col.notNull) {
+                            colDef += ' NOT NULL';
+                        }
+                        
+                        // Aplicar nuevo CHECK constraint para columnas de este enum
+                        if (col.type === enumName) {
+                            const enumValuesStr = newValues.map(v => `'${v}'`).join(', ');
+                            if (col.notNull || col.pk) {
+                                colDef += ` CHECK(${col.name} IN (${enumValuesStr}))`;
+                            } else {
+                                colDef += ` CHECK(${col.name} IS NULL OR ${col.name} IN (${enumValuesStr}))`;
+                            }
+                        }
+                        
+                        return colDef;
+                    }).join(', ');
+
+                    // Recrear la tabla
+                    alasql(`DROP TABLE IF EXISTS ${tableName}`);
+                    alasql(`CREATE TABLE ${tableName} (${columns})`);
+
+                    // Reinsertar datos existentes con SQL corregido
+                    if (existingData.length > 0) {
+                        const columnNames = Object.keys(existingData[0]);
+                        
+                        for (const record of existingData) {
+                            const values = columnNames.map(col => {
+                                const val = record[col];
+                                if (val === null || val === undefined) {
+                                    return 'NULL';
+                                } else if (typeof val === 'string') {
+                                    return `'${val.replace(/'/g, "''")}'`;
+                                } else if (typeof val === 'boolean') {
+                                    return val ? 'TRUE' : 'FALSE';
+                                } else {
+                                    return val;
+                                }
+                            }).filter(v => v !== undefined); // Filtrar valores undefined
+                            
+                            // Solo insertar si tenemos el número correcto de valores
+                            if (values.length === columnNames.length) {
+                                const insertQuery = `INSERT INTO ${tableName} (${columnNames.join(', ')}) VALUES (${values.join(', ')})`;
+                                alasql(insertQuery);
+                            }
+                        }
+                    }
+                } catch (fallbackError) {
+                    console.error(`Error en fallback para tabla ${tableName}:`, fallbackError);
+                    showNotification(`Error crítico al actualizar la tabla ${tableName}: ${fallbackError.message}`, 'error');
+                }
+            }
+        }
+
         populateEnumDropdown();
         updateClassMap();
         closeEditEnumModal();
         
         // Mostrar mensaje de éxito con información de registros eliminados
         let successMessage = `Enum "${enumName}" actualizado exitosamente.`;
+        if (tablesToUpdate.length > 0) {
+            successMessage += `\n\nTablas actualizadas: ${tablesToUpdate.join(', ')}`;
+        }
         if (totalDeletedRecords > 0) {
             successMessage += `\n\nRegistros eliminados (${totalDeletedRecords} en total):\n${deletedRecordsInfo}`;
             showNotification(successMessage, 'warning');
