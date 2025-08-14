@@ -276,10 +276,19 @@ function deleteRecord(tableName, pkValue, event) {
     if (confirm(`¿Estás seguro de que deseas eliminar este registro?`)) {
         try {
             const pkColumn = schema.tables[tableName].columns.find(col => col.pk);
-            alasql(`DELETE FROM ${tableName} WHERE ${pkColumn.name} = ?`, [pkValue]);
-            showAllData(); // Refrescar la vista
+            
+            // Convert pkValue to the correct type
+            let pkVal = pkValue;
+            if (pkColumn.type === 'INT' || pkColumn.type === 'FLOAT') {
+                pkVal = Number(pkValue);
+            }
+            
+            alasql(`DELETE FROM ${tableName} WHERE ${pkColumn.name} = ?`, [pkVal]);
+            showAllData(); // Refresh the view
+            showNotification('Registro eliminado correctamente', 'success');
         } catch (error) {
-            alert('Error al eliminar el registro: ' + error.message);
+            showNotification('Error al eliminar el registro: ' + error.message, 'error');
+            console.error('Delete error:', error);
         }
     }
 }
