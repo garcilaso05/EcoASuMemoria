@@ -20,7 +20,6 @@ async function openEditEnumModal() {
 
     if (enumUsage.length > 0) {
         const message = 
-            `⚠️ INFORMACIÓN IMPORTANTE ⚠️\n\n` +
             `Este enum está siendo utilizado en las siguientes tablas:\n${enumUsage.join(', ')}\n\n` +
             'IMPORTANTE:\n' +
             '• Si ELIMINA un valor del enum, se BORRARÁN AUTOMÁTICAMENTE todos los registros que contengan ese valor\n' +
@@ -28,9 +27,22 @@ async function openEditEnumModal() {
             '• Los cambios no se pueden deshacer\n\n' +
             'Proceda con precaución al editar este enum.';
 
-        alert(message);
+        await showWarningDialog(
+            'Advertencia: Enum en Uso', 
+            message, 
+            () => {
+                // Continuar con la apertura del modal de edición
+                openEditEnumModalContent(enumName);
+            }
+        );
+        return;
     }
 
+    // Si no hay advertencias, abrir directamente
+    openEditEnumModalContent(enumName);
+}
+
+function openEditEnumModalContent(enumName) {
     const enumData = schema.tables[enumName];
     if (!enumData || !enumData.isEnum) {
         showNotification('El elemento seleccionado no es un enum válido.', 'error');

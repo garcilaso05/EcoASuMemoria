@@ -9,7 +9,7 @@ function openEditTableModal() {
     try {
         const tableData = alasql(`SELECT * FROM ${tableName}`);
         if (tableData.length > 0) {
-            const confirmation = confirm(
+            const message = 
                 'Esta tabla contiene datos insertados. La modificación puede causar:\n\n' +
                 '1. Si marca una columna como NOT NULL:\n' +
                 '   - Se eliminarán TODAS las inserciones que tengan NULL en esa columna\n' +
@@ -20,15 +20,27 @@ function openEditTableModal() {
                 '3. Se recomienda:\n' +
                 '   - Tener la pestaña de datos abierta con las inserciones cargadas\n' +
                 '   - Revisar los valores NULL antes de marcar columnas como NOT NULL\n' +
-                '   - Asignar valores a las nuevas columnas antes de marcarlas NOT NULL\n\n' +
-                '¿Está seguro de que desea continuar con la edición?'
+                '   - Asignar valores a las nuevas columnas antes de marcarlas NOT NULL';
+
+            showWarningDialog(
+                'Advertencia: Tabla con Datos',
+                message,
+                () => {
+                    // Continuar con la apertura del modal de edición
+                    openEditTableModalContent(tableName);
+                }
             );
-            if (!confirmation) return;
+            return;
         }
     } catch (error) {
         console.error('Error al verificar datos de la tabla:', error);
     }
 
+    // Si no hay advertencias, abrir directamente
+    openEditTableModalContent(tableName);
+}
+
+function openEditTableModalContent(tableName) {
     const table = schema.tables[tableName];
     const container = document.getElementById('editColumnsContainer');
     container.innerHTML = ''; // Reiniciar el contenedor
