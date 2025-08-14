@@ -330,9 +330,9 @@ function editRecord(tableName, pkValue, event) {
                     case 'DATE':
                         inputHtml = `<input type="date" name="${col.name}" value="${value}">`; break;
                     case 'INT':
-                        inputHtml = `<input type="number" name="${col.name}" step="1" value="${value}">`; break;
+                        inputHtml = `<input type="text" name="${col.name}" value="${value}" class="numeric-input integer-input" inputmode="numeric">`; break;
                     case 'FLOAT':
-                        inputHtml = `<input type="number" name="${col.name}" step="0.01" value="${value}">`; break;
+                        inputHtml = `<input type="text" name="${col.name}" value="${value}" class="numeric-input float-input" inputmode="decimal">`; break;
                     case 'BOOLEAN':
                         inputHtml = `<input type="checkbox" name="${col.name}" ${record[col.name] ? 'checked' : ''}>`; break;
                     default:
@@ -399,9 +399,9 @@ function editRecord(tableName, pkValue, event) {
                     case 'DATE':
                         inputHtml = `<input type="date" name="${col.name}" value="${value}">`; break;
                     case 'INT':
-                        inputHtml = `<input type="number" name="${col.name}" step="1" value="${value}">`; break;
+                        inputHtml = `<input type="text" name="${col.name}" value="${value}" class="numeric-input integer-input" inputmode="numeric">`; break;
                     case 'FLOAT':
-                        inputHtml = `<input type="number" name="${col.name}" step="0.01" value="${value}">`; break;
+                        inputHtml = `<input type="text" name="${col.name}" value="${value}" class="numeric-input float-input" inputmode="decimal">`; break;
                     case 'BOOLEAN':
                         inputHtml = `<input type="checkbox" name="${col.name}" ${record[col.name] ? 'checked' : ''}>`; break;
                     default:
@@ -430,7 +430,80 @@ function editRecord(tableName, pkValue, event) {
         </div>
     `;
     document.body.appendChild(modal);
+    
+    // Configurar validación numérica para los campos del modal
+    setupNumericValidationForModal(modal);
 }
+
+function setupNumericValidationForModal(modal) {
+    // Validación para campos de enteros en el modal
+    modal.querySelectorAll('.integer-input').forEach(input => {
+        input.addEventListener('input', function(e) {
+            let value = e.target.value;
+            value = value.replace(/[^0-9-]/g, '');
+            
+            if (value.includes('-')) {
+                const parts = value.split('-');
+                if (parts[0] === '') {
+                    value = '-' + parts.slice(1).join('');
+                } else {
+                    value = value.replace(/-/g, '');
+                }
+            }
+            
+            e.target.value = value;
+        });
+        
+        input.addEventListener('keypress', function(e) {
+            const char = String.fromCharCode(e.which);
+            const currentValue = e.target.value;
+            
+            if (e.which < 32) return;
+            if (/[0-9]/.test(char)) return;
+            if (char === '-' && currentValue.length === 0 && !currentValue.includes('-')) return;
+            
+            e.preventDefault();
+        });
+    });
+
+    // Validación para campos de flotantes en el modal
+    modal.querySelectorAll('.float-input').forEach(input => {
+        input.addEventListener('input', function(e) {
+            let value = e.target.value;
+            value = value.replace(/[^0-9.,-]/g, '');
+            value = value.replace(/,/g, '.');
+            
+            const parts = value.split('.');
+            if (parts.length > 2) {
+                value = parts[0] + '.' + parts.slice(1).join('');
+            }
+            
+            if (value.includes('-')) {
+                const minusParts = value.split('-');
+                if (minusParts[0] === '') {
+                    value = '-' + minusParts.slice(1).join('');
+                } else {
+                    value = value.replace(/-/g, '');
+                }
+            }
+            
+            e.target.value = value;
+        });
+        
+        input.addEventListener('keypress', function(e) {
+            const char = String.fromCharCode(e.which);
+            const currentValue = e.target.value;
+            
+            if (e.which < 32) return;
+            if (/[0-9]/.test(char)) return;
+            if ((char === '.' || char === ',') && !currentValue.includes('.')) return;
+            if (char === '-' && currentValue.length === 0) return;
+            
+            e.preventDefault();
+        });
+    });
+}
+
 function saveEditedRecord(tableName, pkValue, modal) {
     try {
         const pkColumn = schema.tables[tableName].columns.find(col => col.pk);

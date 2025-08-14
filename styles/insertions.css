@@ -167,3 +167,39 @@
     min-width: 0;
     padding: 8px;
 }
+
+/* Estilos para campos numéricos */
+.numeric-input {
+    font-family: inherit; /* Usar la misma fuente que otros campos */
+    text-align: left; /* Cambiar de right a left */
+    background-color: inherit; /* Usar el mismo color de fondo */
+    border: inherit; /* Usar el mismo borde */
+}
+
+.numeric-input:focus {
+    background-color: inherit; /* Mantener el mismo fondo al hacer focus */
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(59, 89, 152, 0.1);
+}
+
+.integer-input::placeholder {
+    color: #999;
+    font-style: italic;
+}
+
+.float-input::placeholder {
+    color: #999;
+    font-style: italic;
+}
+
+/* Modo oscuro */
+.dark-mode .numeric-input {
+    background-color: inherit; /* Usar el mismo color que otros campos en modo oscuro */
+    border-color: inherit;
+    color: inherit;
+}
+
+.dark-mode .numeric-input:focus {
+    background-color: inherit;
+    border-color: #7c5cb3;
+}
