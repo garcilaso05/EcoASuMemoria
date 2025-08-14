@@ -20,12 +20,18 @@ async function openEditEnumModal() {
 
     if (enumUsage.length > 0) {
         const message = 
+            `⚠️ ADVERTENCIA IMPORTANTE ⚠️\n\n` +
             `Este enum está siendo utilizado en las siguientes tablas:\n${enumUsage.join(', ')}\n\n` +
             'La modificación de valores puede causar:\n' +
             '- Inconsistencias en los datos existentes\n' +
             '- Errores en las restricciones CHECK\n' +
             '- Problemas con las inserciones existentes\n\n' +
-            '¿Está seguro de que desea continuar con la edición?';
+            '🚨 ELIMINACIÓN DE VALORES:\n' +
+            'Si elimina un valor del enum, se BORRARÁN AUTOMÁTICAMENTE\n' +
+            'TODOS los registros que contengan ese valor en cualquier tabla.\n' +
+            'Esta acción NO SE PUEDE DESHACER.\n\n' +
+            '✅ AÑADIR VALORES: Es seguro y no afecta datos existentes.\n\n' +
+            '¿Está COMPLETAMENTE SEGURO de que desea continuar con la edición?';
 
         const shouldContinue = await showCriticalWarning(message);
         if (!shouldContinue) return;
@@ -76,23 +82,83 @@ function removeEnumValueInput(button) {
 
 function saveEnumChanges() {
     const enumName = document.getElementById('editEnumName').value.trim();
-    const values = [];
+    const newValues = [];
     const valueInputs = document.querySelectorAll('#editEnumValuesContainer .enum-value-input .enum-value');
     valueInputs.forEach(input => {
         const value = input.value.trim();
-        if (value) values.push(value);
+        if (value) newValues.push(value);
     });
 
-    if (values.length === 0) {
+    if (newValues.length === 0) {
         alert('Por favor, añade al menos un valor.');
         return;
     }
 
-    schema.tables[enumName].values = values; // Update the enum values in the schema
-    populateEnumDropdown(); // Añadido para actualizar el dropdown
-    updateClassMap(); // Update the visualization
-    closeEditEnumModal();
-    alert(`Enum "${enumName}" actualizado exitosamente.`);
+    try {
+        const currentValues = schema.tables[enumName].values;
+        const removedValues = currentValues.filter(value => !newValues.includes(value));
+        
+        let deletedRecordsInfo = '';
+        let totalDeletedRecords = 0;
+
+        // Si hay valores eliminados, limpiar los datos que los usan
+        if (removedValues.length > 0) {
+            for (const tableName in schema.tables) {
+                if (!schema.tables[tableName].isEnum) {
+                    const table = schema.tables[tableName];
+                    const enumColumns = table.columns.filter(col => col.type === enumName);
+                    
+                    if (enumColumns.length > 0) {
+                        for (const removedValue of removedValues) {
+                            for (const column of enumColumns) {
+                                try {
+                                    // Contar registros que se van a eliminar
+                                    const countQuery = `SELECT COUNT(*) as count FROM ${tableName} WHERE ${column.name} = ?`;
+                                    const countResult = alasql(countQuery, [removedValue]);
+                                    const recordCount = countResult[0].count;
+                                    
+                                    if (recordCount > 0) {
+                                        totalDeletedRecords += recordCount;
+                                        deletedRecordsInfo += `- Tabla "${tableName}", columna "${column.name}": ${recordCount} registros con valor "${removedValue}"\n`;
+                                        
+                                        // Eliminar los registros
+                                        const deleteQuery = `DELETE FROM ${tableName} WHERE ${column.name} = ?`;
+                                        alasql(deleteQuery, [removedValue]);
+                                    }
+                                } catch (error) {
+                                    console.error(`Error al limpiar datos en tabla ${tableName}, columna ${column.name}:`, error);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Actualizar los valores del enum
+        schema.tables[enumName].values = newValues;
+        populateEnumDropdown();
+        updateClassMap();
+        closeEditEnumModal();
+        
+        // Mostrar mensaje de éxito con información de registros eliminados
+        let successMessage = `Enum "${enumName}" actualizado exitosamente.`;
+        if (totalDeletedRecords > 0) {
+            successMessage += `\n\nRegistros eliminados (${totalDeletedRecords} en total):\n${deletedRecordsInfo}`;
+            showNotification(successMessage, 'warning');
+        } else {
+            showNotification(successMessage, 'success');
+        }
+        
+        // Actualizar la vista de datos si está visible
+        if (document.getElementById('datos').style.display !== 'none') {
+            showAllData();
+        }
+        
+    } catch (error) {
+        showNotification('Error al actualizar el enum: ' + error.message, 'error');
+        console.error('Error updating enum:', error);
+    }
 }
 
 function closeEditEnumModal() {
